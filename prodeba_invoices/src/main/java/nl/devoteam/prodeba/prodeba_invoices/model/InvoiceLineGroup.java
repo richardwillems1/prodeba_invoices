@@ -1,5 +1,7 @@
 package nl.devoteam.prodeba.prodeba_invoices.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,31 +15,55 @@ public class InvoiceLineGroup
 	private String client_code;
 	private String product_law;
 	private String product_code;
-	private String assessment_unit; 
-	private PeriodType periodType;
-	private String invoice_range;
+	private String invoice_line_group_unit; 
+	private String invoice_line_group_invoice_range;
 	private double product_price_per_unit;
 	private String invoice_line_vat_tariff;
-	
+	private PeriodType invoice_line_group_period_type;
+	private String invoice_line_group_finance_modality;
 	private double invoice_line_group_amount;
 	private double invoice_line_group_volume;
 	private double invoice_line_group_vat_amount;
 	
 	private boolean valuesCalculated = false;
 	
-	public InvoiceLineGroup(String company_code, String client_code, String product_law, String product_code, String assessment_unit, InvoiceLine invoiceLine, PeriodType periodType, String invoiceRange, double product_price_per_unit, String invoice_line_vat_tariff)
+	public InvoiceLineGroup(String company_code, String client_code, String product_law, String product_code, String assessment_unit, InvoiceLine invoiceLine, PeriodType periodType, String invoiceRange, double product_price_per_unit, String invoice_line_vat_tariff, String invoice_line_group_finance_modality)
 	{
 		invoiceLines = new ArrayList<InvoiceLine>();
 		this.company_code = company_code;
 		this.client_code = client_code;
 		this.product_law = product_law;
 		this.product_code = product_code;
-		this.assessment_unit = assessment_unit;
+		this.invoice_line_group_unit = assessment_unit;
 		invoiceLines.add(invoiceLine);
-		this.periodType = periodType;
-		this.invoice_range = invoiceRange;
+		this.invoice_line_group_period_type = periodType;
+		this.invoice_line_group_invoice_range = invoiceRange;
 		this.product_price_per_unit = product_price_per_unit;
 		this.invoice_line_vat_tariff = invoice_line_vat_tariff;
+		this.invoice_line_group_finance_modality = invoice_line_group_finance_modality;
+	}
+	
+	public InvoiceLineGroup(ResultSet invoiceLineGroupRs)
+	{
+		try
+		{
+			this.invoice_line_group_id = invoiceLineGroupRs.getInt(1);
+			this.invoice_line_group_volume = invoiceLineGroupRs.getDouble(2);
+			this.invoice_line_group_amount = invoiceLineGroupRs.getDouble(3);
+			this.invoice_line_group_vat_amount = invoiceLineGroupRs.getDouble(4);
+			this.invoice_line_group_period_type = PeriodType.valueOf(invoiceLineGroupRs.getString(5).toUpperCase());
+			this.invoice_line_group_invoice_range = invoiceLineGroupRs.getString(6);
+			this.invoice_line_group_unit = invoiceLineGroupRs.getString(7);
+			this.invoice_line_group_finance_modality = invoiceLineGroupRs.getString(8);
+			this.company_code = invoiceLineGroupRs.getString(9);
+			this.product_code = invoiceLineGroupRs.getString(10);
+			this.client_code = invoiceLineGroupRs.getString(11);
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 	
 	public void addInvoiceLine(InvoiceLine invoiceLine)
@@ -73,16 +99,16 @@ public class InvoiceLineGroup
 		return product_code;
 	}
 
-	public String getAssessment_unit() {
-		return assessment_unit;
+	public String getInvoice_line_group_unit() {
+		return invoice_line_group_unit;
 	}
 	
-	public PeriodType periodType() {
-		return periodType;
+	public PeriodType invoice_line_group_period_type() {
+		return invoice_line_group_period_type;
 	}
 	
-	public String getInvoice_range() {
-		return invoice_range;
+	public String getInvoice_line_group_range() {
+		return invoice_line_group_invoice_range;
 	}
 	
 	public double getProduct_price_per_unit() {
@@ -105,8 +131,8 @@ public class InvoiceLineGroup
 		return invoice_line_vat_tariff;
 	}
 	
-	public boolean valuesCalculated() {
-		return valuesCalculated;
+	public PeriodType getInvoice_line_group_period_type() {
+		return invoice_line_group_period_type;
 	}
 
 	public int getInvoice_line_group_id() {
@@ -115,5 +141,21 @@ public class InvoiceLineGroup
 
 	public void setInvoice_line_group_id(int invoice_line_group_id) {
 		this.invoice_line_group_id = invoice_line_group_id;
+	}
+
+	public String getInvoice_line_group_invoice_range() {
+		return invoice_line_group_invoice_range;
+	}
+
+	public String getInvoice_line_vat_tariff() {
+		return invoice_line_vat_tariff;
+	}
+
+	public String getInvoice_line_group_finance_modality() {
+		return invoice_line_group_finance_modality;
+	}
+
+	public boolean isValuesCalculated() {
+		return valuesCalculated;
 	}
 }

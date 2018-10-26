@@ -10,7 +10,7 @@ import nl.devoteam.prodeba.prodeba_invoices.enumeration.PeriodType;
 
 public class ProdebaInvoices 
 {
-	private static String jdbcUrl = "jdbc:mysql://192.168.0.20:3306/prodeba";
+	private static String jdbcUrl = "jdbc:mysql://192.168.100.145:3306/prodeba";
 	Connection con;
 	
 	public ProdebaInvoices()
@@ -18,7 +18,7 @@ public class ProdebaInvoices
 		try 
 		{
 			con = DriverManager.getConnection(jdbcUrl, "richard", "L3ias*l*22");
-			System.out.println("Connection established to database.");
+			System.out.println("Connection to database established.");
 		}
 		catch(SQLException e)
 		{
@@ -44,14 +44,42 @@ public class ProdebaInvoices
 		}
 	}
 	
-	public void generateInvoiceLineGroups()
+	public void generateInvoiceLineGroups(PeriodType periodType, String invoice_invoice_range)
 	{
 		try
 		{
 			InvoiceLineGroupGenerator ilgg = new InvoiceLineGroupGenerator(con);
-			ilgg.generateInvoice(PeriodType.MONTH, "Augustus", con);
+			ilgg.generateInvoiceLineGroups(periodType, invoice_invoice_range);
 		}
 		catch(Exception e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public void generateInvoices(PeriodType periodType, String invoice_invoice_range)
+	{
+		try
+		{
+			InvoiceGenerator ig = new InvoiceGenerator(con);
+			ig.generateInvoices(periodType, invoice_invoice_range);
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public void closeConnection()
+	{
+		try
+		{
+			con.close();
+			System.out.println("Connection to database closed.");
+		}
+		catch(SQLException e)
 		{
 			e.printStackTrace();
 			System.exit(1);
@@ -69,7 +97,19 @@ public class ProdebaInvoices
 	public static void main(String[] args) 
 	{
 		ProdebaInvoices pi = new ProdebaInvoices();
-		pi.generateInvoiceLineGroups();
+		pi.generateConceptInvoiceLines();
+		pi.generateInvoiceLineGroups(PeriodType.MONTH, "Augustus");
+		pi.generateInvoiceLineGroups(PeriodType.MONTH, "September");
+		pi.generateInvoiceLineGroups(PeriodType.PERIOD, "Periode 8");
+		pi.generateInvoiceLineGroups(PeriodType.PERIOD, "Periode 9");
+		pi.generateInvoiceLineGroups(PeriodType.PERIOD, "Periode 10");
+		
+		pi.generateInvoices(PeriodType.MONTH, "Augustus");
+		pi.generateInvoices(PeriodType.MONTH, "September");
+		pi.generateInvoices(PeriodType.PERIOD, "Periode 8");
+		pi.generateInvoices(PeriodType.PERIOD, "Periode 9");
+		pi.generateInvoices(PeriodType.PERIOD, "Periode 10");
+		pi.closeConnection();
 	}
 
 }

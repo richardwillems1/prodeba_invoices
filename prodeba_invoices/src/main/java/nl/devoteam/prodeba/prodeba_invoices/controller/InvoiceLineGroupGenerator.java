@@ -30,7 +30,7 @@ public class InvoiceLineGroupGenerator
 		
 		try
 		{
-			fillInvoiceArray(invoiceRs(con));
+			fillInvoiceLineArray(invoiceLineRs());
 		}
 		catch(SQLException e)
 		{
@@ -39,7 +39,7 @@ public class InvoiceLineGroupGenerator
 		}
 	}
 	
-	private ResultSet invoiceRs(Connection con) throws SQLException
+	private ResultSet invoiceLineRs() throws SQLException
 	{
 		Statement stmnt = con.createStatement();
 		return stmnt.executeQuery("SELECT "
@@ -59,13 +59,13 @@ public class InvoiceLineGroupGenerator
 				+ " FROM invoice_lines_with_data");
 	}
 	
-	private void fillInvoiceArray(ResultSet invoiceRs) throws SQLException
+	private void fillInvoiceLineArray(ResultSet invoiceRs) throws SQLException
 	{
 		while(invoiceRs.next())
 			invoiceLines.add(new InvoiceLine(invoiceRs));
 	}
 	
-	public void generateInvoice(PeriodType periodType, String invoiceRange, Connection con) throws Exception
+	public void generateInvoiceLineGroups(PeriodType periodType, String invoiceRange) throws Exception
 	{
 		switch(periodType)
 		{
@@ -77,22 +77,39 @@ public class InvoiceLineGroupGenerator
 				break;
 		}
 		
-		writeInvoiceLines(con);
+		writeInvoiceLines();
 	}
 	
-	private void writeInvoiceLines(Connection con) throws Exception 
+	private void writeInvoiceLines() throws Exception 
 	{
-		System.out.println("Writing records into database.");
+		System.out.println("Writing invoice line group records into database.");
 		for(InvoiceLineGroup invoiceLineGroup : invoiceLineGroups)
 		{
 			calculateValues(invoiceLineGroup);
 			Statement stmnt = con.createStatement();
 			stmnt.execute(
-					"INSERT INTO invoice_line_groups (invoice_line_group_volume, invoice_line_group_amount, invoice_line_group_vat)"
+					"INSERT INTO invoice_line_groups ("
+					+ "invoice_line_group_volume,"
+					+ "invoice_line_group_amount,"
+					+ "invoice_line_group_vat,"
+					+ "invoice_line_group_period_type,"
+					+ "invoice_line_group_invoice_range,"
+					+ "invoice_line_group_unit,"
+					+ "invoice_line_group_finance_modality,"
+					+ "company_company_code,"
+					+ "product_product_code,"
+					+ "client_client_code)"
 					+ "VALUES ("
 					+ invoiceLineGroup.getInvoice_line_group_volume() + ","
 					+ invoiceLineGroup.getInvoice_line_group_amount() + ","
-					+ invoiceLineGroup.getInvoice_line_group_vat_amount() + ")");
+					+ invoiceLineGroup.getInvoice_line_group_vat_amount() + ","
+					+ "'" + invoiceLineGroup.getInvoice_line_group_period_type().toString().toLowerCase() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_range().toLowerCase() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_unit() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "'"
+					+ "'" + invoiceLineGroup.getCompany_code() + "',"
+					+ "'" + invoiceLineGroup.getProduct_code() + "',"
+					+ "'" + invoiceLineGroup.getClient_code() + "')");
 			
 			stmnt = con.createStatement();
 			ResultSet rs = stmnt.executeQuery("SELECT LAST_INSERT_ID()");
@@ -128,6 +145,7 @@ public class InvoiceLineGroupGenerator
 		invoice_line_group_volume = new BigDecimal(String.valueOf(invoice_line_group_volume)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
 		double invoice_line_group_amount = invoice_line_group_amount(invoiceLineGroup, invoice_line_group_volume);
+		invoice_line_group_amount = new BigDecimal(String.valueOf(invoice_line_group_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
 		String invoice_line_group_vat_tariff = invoiceLineGroup.getInvoice_line_group_vat_tariff();
 		double invoice_line_group_vat_amount = 0;
@@ -141,12 +159,14 @@ public class InvoiceLineGroupGenerator
 		else
 			throw new Exception("Invalid VAT tariff.");	
 		
+		invoice_line_group_vat_amount = new BigDecimal(String.valueOf(invoice_line_group_vat_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		
 		invoiceLineGroup.setCalculatedValues(invoice_line_group_amount, invoice_line_group_volume, invoice_line_group_vat_amount);
 	}
 	
 	private double invoice_line_group_amount(InvoiceLineGroup invoiceLineGroup, double invoice_line_group_volume) throws Exception 
 	{
-		String assessment_unit = invoiceLineGroup.getAssessment_unit();
+		String assessment_unit = invoiceLineGroup.getInvoice_line_group_unit();
 		double product_price_per_unit = invoiceLineGroup.getProduct_price_per_unit();
 		
 		Statement stmnt = con.createStatement();
@@ -204,12 +224,38 @@ public class InvoiceLineGroupGenerator
 			throw new Exception("Invalid month provided.");
 		
 		for(InvoiceLine invoiceLine : invoiceLines)
-		{
-			if(invoiceLine.getInvoice_line_date().toLocalDate().isAfter(minDate.minusDays(1)) &&
+		{		
+			if(invoice_information_period(invoiceLine).equals("Maand") &&
+					invoiceLine.getInvoice_line_date().toLocalDate().isAfter(minDate.minusDays(1)) &&
 					invoiceLine.getInvoice_line_date().toLocalDate().isBefore(maxDate.plusDays(1)))
 				if(!addToInvoiceLineGroup(invoiceLine))
-					invoiceLineGroups.add(new InvoiceLineGroup(invoiceLine.getCompany_code(), invoiceLine.getClient_code(), invoiceLine.getProduct_law(), invoiceLine.getProduct_code(), invoiceLine.getAssessment_unit(), invoiceLine, PeriodType.MONTH, invoiceRange, invoiceLine.getProduct_price_per_unit(), invoiceLine.getInvoice_line_vat_tariff()));									
+					invoiceLineGroups.add(new InvoiceLineGroup(invoiceLine.getCompany_code(), invoiceLine.getClient_code(), invoiceLine.getProduct_law(), invoiceLine.getProduct_code(), invoiceLine.getAssessment_unit(), invoiceLine, PeriodType.MONTH, invoiceRange, invoiceLine.getProduct_price_per_unit(), invoiceLine.getInvoice_line_vat_tariff(), assessment_assessment_finance_modality(invoiceLine)));									
 		}
+	}
+	
+	private String assessment_assessment_finance_modality(InvoiceLine invoice_Line) throws SQLException
+	{
+		Statement stmnt = con.createStatement();
+		String queryString = "SELECT DISTINCT assessments.assessment_finance_modality " + 
+				"FROM invoice_lines LEFT JOIN " +  
+				"assessments ON assessments.assessment_id = invoice_lines.assessment_id " + 
+				"WHERE invoice_line.invoice_line_id = "+ invoice_Line.getInvoice_line_id();
+		ResultSet financeModalityRs = stmnt.executeQuery(queryString);
+		
+		financeModalityRs.next();
+		return financeModalityRs.getString(1);
+	}
+	
+	private String invoice_information_period(InvoiceLine invoiceLine) throws SQLException
+	{
+		Statement stmnt = con.createStatement();
+		String queryString = "SELECT invoice_information.invoice_information_period "
+				+ "FROM invoice_information "
+				+ "WHERE invoice_information.company_code = '" + invoiceLine.getCompany_code() + "' AND invoice_information.invoice_information_law = '" + invoiceLine.getProduct_law() + "'";
+		ResultSet periodRs = stmnt.executeQuery(queryString);
+		
+		periodRs.next();
+		return periodRs.getString(1);
 	}
 
 	private void generatePeriodInvoiceLineGroups(String invoiceRange) throws Exception 
@@ -237,10 +283,11 @@ public class InvoiceLineGroupGenerator
 		
 		for(InvoiceLine invoiceLine : invoiceLines)
 		{
-			if(invoiceLine.getInvoice_line_date().toLocalDate().isAfter(minDate.minusDays(1)) &&
+			if(invoice_information_period(invoiceLine).equals("Per 4 weken") &&
+					invoiceLine.getInvoice_line_date().toLocalDate().isAfter(minDate.minusDays(1)) &&
 					invoiceLine.getInvoice_line_date().toLocalDate().isBefore(maxDate.plusDays(1)))
 				if(!addToInvoiceLineGroup(invoiceLine))
-					invoiceLineGroups.add(new InvoiceLineGroup(invoiceLine.getCompany_code(), invoiceLine.getClient_code(), invoiceLine.getProduct_law(), invoiceLine.getProduct_code(), invoiceLine.getAssessment_unit(), invoiceLine, PeriodType.PERIOD, invoiceRange, invoiceLine.getProduct_price_per_unit(), invoiceLine.getInvoice_line_vat_tariff()));									
+					invoiceLineGroups.add(new InvoiceLineGroup(invoiceLine.getCompany_code(), invoiceLine.getClient_code(), invoiceLine.getProduct_law(), invoiceLine.getProduct_code(), invoiceLine.getAssessment_unit(), invoiceLine, PeriodType.PERIOD, invoiceRange, invoiceLine.getProduct_price_per_unit(), invoiceLine.getInvoice_line_vat_tariff(), assessment_assessment_finance_modality(invoiceLine)));									
 		}
 		
 	}
@@ -251,7 +298,7 @@ public class InvoiceLineGroupGenerator
 		{
 			if(
 					invoiceLineGroup.getClient_code().equals(invoiceLine.getClient_code()) &&
-					invoiceLineGroup.getAssessment_unit().equals(invoiceLine.getAssessment_unit()) &&
+					invoiceLineGroup.getInvoice_line_group_unit().equals(invoiceLine.getAssessment_unit()) &&
 					invoiceLineGroup.getProduct_code().equals(invoiceLine.getProduct_code()) &&
 					invoiceLineGroup.getCompany_code().equals(invoiceLine.getCompany_code()))
 			{

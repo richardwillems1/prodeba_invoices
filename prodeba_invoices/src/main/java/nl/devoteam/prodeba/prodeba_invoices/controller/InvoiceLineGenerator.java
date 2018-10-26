@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.devoteam.prodeba.prodeba_invoices.model.HourRecord;
@@ -20,6 +21,8 @@ public class InvoiceLineGenerator
 	{
 		this.con = con;
 		this.hoursRs = hoursRs;
+		this.hourRecords = new ArrayList<HourRecord>();
+		this.invoiceLines = new ArrayList<InvoiceLine>();
 	}
 	
 	public void generateInvoiceLines()
@@ -38,7 +41,7 @@ public class InvoiceLineGenerator
 	
 	private void writeInvoiceLines(Connection con) throws SQLException 
 	{
-		System.out.println("Writing records into database.");
+		System.out.println("Writing invoice line records into database.");
 		for(InvoiceLine invoiceLine : invoiceLines)
 		{
 			Statement stmnt = con.createStatement();
