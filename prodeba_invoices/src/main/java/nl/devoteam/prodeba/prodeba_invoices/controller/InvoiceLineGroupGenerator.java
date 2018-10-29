@@ -82,7 +82,6 @@ public class InvoiceLineGroupGenerator
 	
 	private void writeInvoiceLines() throws Exception 
 	{
-		System.out.println("Writing invoice line group records into database.");
 		for(InvoiceLineGroup invoiceLineGroup : invoiceLineGroups)
 		{
 			calculateValues(invoiceLineGroup);
@@ -106,7 +105,7 @@ public class InvoiceLineGroupGenerator
 					+ "'" + invoiceLineGroup.getInvoice_line_group_period_type().toString().toLowerCase() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_range().toLowerCase() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_unit() + "',"
-					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "'"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "',"
 					+ "'" + invoiceLineGroup.getCompany_code() + "',"
 					+ "'" + invoiceLineGroup.getProduct_code() + "',"
 					+ "'" + invoiceLineGroup.getClient_code() + "')");
@@ -127,7 +126,6 @@ public class InvoiceLineGroupGenerator
 					+ invoiceLineGroup.getInvoice_line_group_id() +")");
 			}
 		}
-		System.out.println("All records written into database.");
 	}
 	
 	private void calculateValues(InvoiceLineGroup invoiceLineGroup) throws Exception
@@ -239,7 +237,7 @@ public class InvoiceLineGroupGenerator
 		String queryString = "SELECT DISTINCT assessments.assessment_finance_modality " + 
 				"FROM invoice_lines LEFT JOIN " +  
 				"assessments ON assessments.assessment_id = invoice_lines.assessment_id " + 
-				"WHERE invoice_line.invoice_line_id = "+ invoice_Line.getInvoice_line_id();
+				"WHERE invoice_lines.invoice_line_id = "+ invoice_Line.getInvoice_line_id();
 		ResultSet financeModalityRs = stmnt.executeQuery(queryString);
 		
 		financeModalityRs.next();

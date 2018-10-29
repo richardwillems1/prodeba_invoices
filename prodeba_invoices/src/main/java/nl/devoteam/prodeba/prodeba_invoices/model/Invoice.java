@@ -16,6 +16,7 @@ public class Invoice
 	private String company_company_code;
 	private PeriodType invoice_period_type;
 	private String invoice_invoice_range;
+	private String invoice_finance_modality;
 
 	public Invoice(InvoiceLineGroup invoice_line_group)
 	{
@@ -24,6 +25,7 @@ public class Invoice
 		this.invoice_period_type = invoice_line_group.getInvoice_line_group_period_type();
 		this.invoice_invoice_range = invoice_line_group.getInvoice_line_group_range();
 		this.company_company_code = invoice_line_group.getCompany_code();
+		this.invoice_finance_modality = invoice_line_group.getInvoice_line_group_finance_modality();
 	}
 	
 	public void addInvoice_line_group(InvoiceLineGroup invoice_line_group)
@@ -61,6 +63,10 @@ public class Invoice
 
 	public String getInvoice_invoice_range() {
 		return invoice_invoice_range;
+	}
+
+	public String getInvoice_finance_modality() {
+		return invoice_finance_modality;
 	}
 
 	public void setInvoice_invoice_id(int invoice_invoice_id) {

@@ -17,10 +17,10 @@ public class InvoiceLineGenerator
 	private Connection con;
 	private ResultSet hoursRs;
 	
-	public InvoiceLineGenerator(Connection con, ResultSet hoursRs)
+	public InvoiceLineGenerator(Connection con) throws SQLException
 	{
 		this.con = con;
-		this.hoursRs = hoursRs;
+		this.hoursRs = getHourRecords();
 		this.hourRecords = new ArrayList<HourRecord>();
 		this.invoiceLines = new ArrayList<InvoiceLine>();
 	}
@@ -41,7 +41,6 @@ public class InvoiceLineGenerator
 	
 	private void writeInvoiceLines(Connection con) throws SQLException 
 	{
-		System.out.println("Writing invoice line records into database.");
 		for(InvoiceLine invoiceLine : invoiceLines)
 		{
 			Statement stmnt = con.createStatement();
@@ -59,7 +58,13 @@ public class InvoiceLineGenerator
 					+ "'" + invoiceLine.getInvoice_line_vat_tariff() + "',"
 					+ "'" + invoiceLine.getInvoice_line_vat_calculation() + "')");
 		}
-		System.out.println("All records written into database.");
+	}
+	
+	private ResultSet getHourRecords() throws SQLException
+	{
+
+		Statement stmnt = con.createStatement();
+		return stmnt.executeQuery("SELECT * FROM hours_with_assessment_data");
 	}
 
 	private void createInvoiceLines(ResultSet hoursRs) throws SQLException 
@@ -103,7 +108,6 @@ public class InvoiceLineGenerator
 				System.exit(1);
 			}
 		}
-		System.out.println("Finished generating invoice lines.");
 	}
 
 	private double calculateAmount(double volume, String assessment_unit, String product_unit, double product_price_per_unit) throws Exception 
