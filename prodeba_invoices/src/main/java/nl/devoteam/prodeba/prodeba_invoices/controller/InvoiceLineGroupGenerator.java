@@ -164,45 +164,97 @@ public class InvoiceLineGroupGenerator
 		invoiceLineGroup.setCalculatedValues(invoice_line_group_amount, invoice_line_group_volume, invoice_line_group_vat_amount);
 	}
 	
-	private double invoice_line_group_amount(InvoiceLineGroup invoiceLineGroup, double invoice_line_group_volume) throws Exception 
+	/*
+	private String invoice_line_group_price_per_unit_calculation(InvoiceLineGroup invoiceLineGroup)
 	{
 		String assessment_unit = invoiceLineGroup.getInvoice_line_group_unit();
+		String product_unit = product_unit(invoiceLineGroup.getProduct_code());
 		double product_price_per_unit = invoiceLineGroup.getProduct_price_per_unit();
 		
-		Statement stmnt = con.createStatement();
-		ResultSet rs = stmnt.executeQuery("SELECT product_unit FROM external_products WHERE product_code = '" + invoiceLineGroup.getProduct_code() + "'");
-		rs.next();
-		String product_unit = rs.getString(1);
-
+		double invoice_line_price_per_unit;
 		
 		if(assessment_unit.equals(product_unit))
-			return invoice_line_group_volume * product_price_per_unit;
+			return Double.toString(product_price_per_unit);
 		else if(assessment_unit.equals("minuut") && product_unit.equals("uur"))
-			return (invoice_line_group_volume / 60) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 60;
 		else if(assessment_unit.equals("minuut") && product_unit.equals("dagdeel"))
-			return (invoice_line_group_volume / 60 / 4) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 60 / 4;
 		else if(assessment_unit.equals("minuut") && product_unit.equals("etmaal"))
-			return (invoice_line_group_volume / 60 / 24) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 60 / 24;
 		else if(assessment_unit.equals("uur") && product_unit.equals("minuut"))
-			return (invoice_line_group_volume * 60) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 60;
 		else if(assessment_unit.equals("uur") && product_unit.equals("dagdeel"))
-			return (invoice_line_group_volume / 4) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 4;
 		else if(assessment_unit.equals("uur") && product_unit.equals("etmaal"))
-			return (invoice_line_group_volume / 24) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 24;
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("minuut"))
-			return (invoice_line_group_volume * 4 * 60) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 4 * 60;
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("uur"))
-			return (invoice_line_group_volume * 4) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 4;
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("etmaal"))
-			return (invoice_line_group_volume / 6) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit / 6;
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("minuut"))
-			return (invoice_line_group_volume * 24 * 60) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 24 * 60;
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("uur"))
-			return (invoice_line_group_volume * 24) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 24;
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
-			return (invoice_line_group_volume * 6) * product_price_per_unit;
+			invoice_line_price_per_unit = product_price_per_unit * 6;
 		else
 			throw new Exception("No valid unit conversion for amount was possible.");
+	} */
+	
+	private double invoice_line_group_price_per_unit(InvoiceLineGroup invoiceLineGroup) throws SQLException, Exception
+	{
+		String assessment_unit = invoiceLineGroup.getInvoice_line_group_unit();
+		String product_unit = product_unit(invoiceLineGroup.getProduct_code());
+		double product_price_per_unit = invoiceLineGroup.getProduct_price_per_unit();
+		
+		double invoice_line_price_per_unit;
+		
+		if(assessment_unit.equals(product_unit))
+			return product_price_per_unit;
+		else if(assessment_unit.equals("minuut") && product_unit.equals("uur"))
+			invoice_line_price_per_unit = product_price_per_unit / 60;
+		else if(assessment_unit.equals("minuut") && product_unit.equals("dagdeel"))
+			invoice_line_price_per_unit = product_price_per_unit / 60 / 4;
+		else if(assessment_unit.equals("minuut") && product_unit.equals("etmaal"))
+			invoice_line_price_per_unit = product_price_per_unit / 60 / 24;
+		else if(assessment_unit.equals("uur") && product_unit.equals("minuut"))
+			invoice_line_price_per_unit = product_price_per_unit * 60;
+		else if(assessment_unit.equals("uur") && product_unit.equals("dagdeel"))
+			invoice_line_price_per_unit = product_price_per_unit / 4;
+		else if(assessment_unit.equals("uur") && product_unit.equals("etmaal"))
+			invoice_line_price_per_unit = product_price_per_unit / 24;
+		else if(assessment_unit.equals("dagdeel") && product_unit.equals("minuut"))
+			invoice_line_price_per_unit = product_price_per_unit * 4 * 60;
+		else if(assessment_unit.equals("dagdeel") && product_unit.equals("uur"))
+			invoice_line_price_per_unit = product_price_per_unit * 4;
+		else if(assessment_unit.equals("dagdeel") && product_unit.equals("etmaal"))
+			invoice_line_price_per_unit = product_price_per_unit / 6;
+		else if(assessment_unit.equals("etmaal") && product_unit.equals("minuut"))
+			invoice_line_price_per_unit = product_price_per_unit * 24 * 60;
+		else if(assessment_unit.equals("etmaal") && product_unit.equals("uur"))
+			invoice_line_price_per_unit = product_price_per_unit * 24;
+		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
+			invoice_line_price_per_unit = product_price_per_unit * 6;
+		else
+			throw new Exception("No valid unit conversion for amount was possible.");
+		
+		return new BigDecimal(String.valueOf(invoice_line_price_per_unit)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+	}
+	
+	private String product_unit(String product_code) throws SQLException
+	{
+		Statement stmnt = con.createStatement();
+		ResultSet rs = stmnt.executeQuery("SELECT product_unit FROM external_products WHERE product_code = '" + product_code + "'");
+		rs.next();
+		return rs.getString(1);
+	}
+	
+	private double invoice_line_group_amount(InvoiceLineGroup invoiceLineGroup, double invoice_line_group_volume) throws SQLException, Exception 
+	{
+		double invoice_line_group_amount = invoice_line_group_price_per_unit(invoiceLineGroup) * invoice_line_group_volume;
+		return new BigDecimal(String.valueOf(invoice_line_group_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 
 	private void generateMonthlyInvoiceLineGroups(String invoiceRange) throws Exception 

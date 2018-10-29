@@ -115,29 +115,29 @@ public class InvoiceLineGenerator
 		if(assessment_unit.equals(product_unit))
 			return volume * product_price_per_unit;
 		else if(assessment_unit.equals("minuut") && product_unit.equals("uur"))
-			return (volume / 60) * product_price_per_unit;
+			return volume * (product_price_per_unit / 60);
 		else if(assessment_unit.equals("minuut") && product_unit.equals("dagdeel"))
-			return (volume / 60 / 4) * product_price_per_unit;
+			return volume * (product_price_per_unit / 4 / 60);
 		else if(assessment_unit.equals("minuut") && product_unit.equals("etmaal"))
-			return (volume / 60 / 24) * product_price_per_unit;
+			return volume * (product_price_per_unit / 24 / 60);
 		else if(assessment_unit.equals("uur") && product_unit.equals("minuut"))
-			return (volume * 60) * product_price_per_unit;
+			return volume * (product_price_per_unit * 60);
 		else if(assessment_unit.equals("uur") && product_unit.equals("dagdeel"))
-			return (volume / 4) * product_price_per_unit;
+			return volume * product_price_per_unit / 4;
 		else if(assessment_unit.equals("uur") && product_unit.equals("etmaal"))
-			return (volume / 24) * product_price_per_unit;
+			return volume * (product_price_per_unit / 24);
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("minuut"))
-			return (volume * 4 * 60) * product_price_per_unit;
+			return volume * (product_price_per_unit  * 4 * 60);
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("uur"))
-			return (volume * 4) * product_price_per_unit;
+			return volume * (product_price_per_unit * 4);
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("etmaal"))
-			return (volume / 6) * product_price_per_unit;
+			return volume* (product_price_per_unit / 6);
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("minuut"))
-			return (volume * 24 * 60) * product_price_per_unit;
+			return volume * (product_price_per_unit * 24 * 60);
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("uur"))
-			return (volume * 24) * product_price_per_unit;
+			return volume * product_price_per_unit * 24;
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
-			return (volume * 6) * product_price_per_unit;
+			return volume * (product_price_per_unit * 6);
 		else
 			throw new Exception("No valid unit conversion for amount was possible.");
 	}
@@ -147,29 +147,29 @@ public class InvoiceLineGenerator
 		if(assessment_unit.equals(product_unit))
 			return "(" + volumeCalculationString + ")*" + product_price_per_unit;
 		else if(assessment_unit.equals("minuut") && product_unit.equals("uur"))
-			return "((" + volumeCalculationString + ")/60)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/60)";
 		else if(assessment_unit.equals("minuut") && product_unit.equals("dagdeel"))
-			return "((" + volumeCalculationString + ")/60/4)*" + product_price_per_unit;
+			return  "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/4/60)";
 		else if(assessment_unit.equals("minuut") && product_unit.equals("etmaal"))
-			return "((" + volumeCalculationString + ")/60/24)*" + product_price_per_unit;
+			return  "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/24/60)";
 		else if(assessment_unit.equals("uur") && product_unit.equals("minuut"))
-			return "((" + volumeCalculationString + ")*60)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*60)";
 		else if(assessment_unit.equals("uur") && product_unit.equals("dagdeel"))
-			return "((" + volumeCalculationString + ")/4)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/4)";
 		else if(assessment_unit.equals("uur") && product_unit.equals("etmaal"))
-			return "((" + volumeCalculationString + ")/24)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/24)";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("minuut"))
-			return "((" + volumeCalculationString + ")*4*60)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*60*4)";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("uur"))
-			return "((" + volumeCalculationString + ")*4)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*4)";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("etmaal"))
-			return "((" + volumeCalculationString + ")/6)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "/6)";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("minuut"))
-			return "((" + volumeCalculationString + ")*24*60)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*60*24)";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("uur"))
-			return "((" + volumeCalculationString + ")*24)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*24)";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
-			return "((" + volumeCalculationString + ")*6)*" + product_price_per_unit;
+			return "(" + volumeCalculationString + ")*" + "(" + product_price_per_unit + "*6)";
 		else
 			throw new Exception("No valid unit calculation string for amount calculation was possible.");
 	}
