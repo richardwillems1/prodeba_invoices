@@ -24,6 +24,7 @@ public class InvoiceLineGroup
 	private double invoice_line_group_amount;
 	private double invoice_line_group_volume;
 	private double invoice_line_group_vat_amount;
+	private String invoice_line_group_law;
 	
 	private boolean valuesCalculated = false;
 	
@@ -55,9 +56,10 @@ public class InvoiceLineGroup
 			this.invoice_line_group_invoice_range = invoiceLineGroupRs.getString(6);
 			this.invoice_line_group_unit = invoiceLineGroupRs.getString(7);
 			this.invoice_line_group_finance_modality = invoiceLineGroupRs.getString(8);
-			this.company_code = invoiceLineGroupRs.getString(9);
-			this.product_code = invoiceLineGroupRs.getString(10);
-			this.client_code = invoiceLineGroupRs.getString(11);
+			this.invoice_line_group_law = invoiceLineGroupRs.getString(9);
+			this.company_code = invoiceLineGroupRs.getString(10);
+			this.product_code = invoiceLineGroupRs.getString(11);
+			this.client_code = invoiceLineGroupRs.getString(12);
 		}
 		catch(SQLException e)
 		{
@@ -153,6 +155,10 @@ public class InvoiceLineGroup
 
 	public String getInvoice_line_group_finance_modality() {
 		return invoice_line_group_finance_modality;
+	}
+
+	public String getInvoice_line_group_law() {
+		return invoice_line_group_law;
 	}
 
 	public boolean isValuesCalculated() {

@@ -77,10 +77,10 @@ public class InvoiceLineGroupGenerator
 				break;
 		}
 		
-		writeInvoiceLines();
+		writeInvoiceLineGroups();
 	}
 	
-	private void writeInvoiceLines() throws Exception 
+	private void writeInvoiceLineGroups() throws Exception 
 	{
 		for(InvoiceLineGroup invoiceLineGroup : invoiceLineGroups)
 		{
@@ -95,6 +95,7 @@ public class InvoiceLineGroupGenerator
 					+ "invoice_line_group_invoice_range,"
 					+ "invoice_line_group_unit,"
 					+ "invoice_line_group_finance_modality,"
+					+ "invoice_line_group_law,"
 					+ "company_company_code,"
 					+ "product_product_code,"
 					+ "client_client_code)"
@@ -106,6 +107,7 @@ public class InvoiceLineGroupGenerator
 					+ "'" + invoiceLineGroup.getInvoice_line_group_range().toLowerCase() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_unit() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "',"
+					+ "'" + invoiceLineGroup.getProduct_law() + "',"
 					+ "'" + invoiceLineGroup.getCompany_code() + "',"
 					+ "'" + invoiceLineGroup.getProduct_code() + "',"
 					+ "'" + invoiceLineGroup.getClient_code() + "')");
@@ -294,11 +296,14 @@ public class InvoiceLineGroupGenerator
 	{
 		for(InvoiceLineGroup invoiceLineGroup : invoiceLineGroups)
 		{
-			if(
+			if
+			(
 					invoiceLineGroup.getClient_code().equals(invoiceLine.getClient_code()) &&
 					invoiceLineGroup.getInvoice_line_group_unit().equals(invoiceLine.getAssessment_unit()) &&
 					invoiceLineGroup.getProduct_code().equals(invoiceLine.getProduct_code()) &&
-					invoiceLineGroup.getCompany_code().equals(invoiceLine.getCompany_code()))
+					invoiceLineGroup.getCompany_code().equals(invoiceLine.getCompany_code()) &&
+					invoiceLineGroup.getInvoice_line_group_finance_modality().equals(invoiceLine.getAssessment_finance_modality())
+			)
 			{
 				invoiceLineGroup.addInvoiceLine(invoiceLine);
 				return true;

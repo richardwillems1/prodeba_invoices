@@ -52,10 +52,14 @@ public class InvoiceGenerator
 	{
 		for(Invoice invoice : invoices)
 		{
-			if(invoice.getInvoice_period_type().equals(invoice_line_group.getInvoice_line_group_period_type()) &&
+			if
+			(
+					invoice.getInvoice_period_type().equals(invoice_line_group.getInvoice_line_group_period_type()) &&
 					invoice.getInvoice_invoice_range().equals(invoice_line_group.getInvoice_line_group_range()) &&
 					invoice.getCompany_company_code().equals(invoice_line_group.getCompany_code()) &&
-					invoice.getInvoice_finance_modality().equals(invoice_line_group.getInvoice_line_group_finance_modality()))
+					invoice.getInvoice_finance_modality().equals(invoice_line_group.getInvoice_line_group_finance_modality()) &&
+					invoice.getInvoice_law().equals(invoice_line_group.getInvoice_line_group_law())
+			)
 			{
 				invoice.addInvoice_line_group(invoice_line_group);
 				return true;
@@ -78,6 +82,7 @@ public class InvoiceGenerator
 					+ "invoice_period_type,"
 					+ "invoice_invoice_range,"
 					+ "invoice_financing_modality,"
+					+ "invoice_law,"
 					+ "company_company_code)"
 					+ "VALUES ("
 					+ invoice.getInvoice_amount() + ","
@@ -86,6 +91,7 @@ public class InvoiceGenerator
 					+ "'" + invoice.getInvoice_period_type().toString().toLowerCase() + "',"
 					+ "'" + invoice.getInvoice_invoice_range() + "',"
 					+ "'" + invoice.getInvoice_finance_modality() + "',"
+					+ "'" + invoice.getInvoice_law() + "',"
 					+ "'" + invoice.getCompany_company_code() + "')");
 			
 			stmnt = con.createStatement();
