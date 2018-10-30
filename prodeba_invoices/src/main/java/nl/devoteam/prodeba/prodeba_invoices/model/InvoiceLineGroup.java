@@ -25,6 +25,10 @@ public class InvoiceLineGroup
 	private double invoice_line_group_volume;
 	private double invoice_line_group_vat_amount;
 	private String invoice_line_group_law;
+	private double invoice_line_group_price_per_unit;
+	private String invoice_line_group_price_per_unit_calculation;
+	private String invoice_line_group_volume_calculation;
+	private String invoice_line_group_amount_calculation;
 	
 	private boolean valuesCalculated = false;
 	
@@ -57,9 +61,13 @@ public class InvoiceLineGroup
 			this.invoice_line_group_unit = invoiceLineGroupRs.getString(7);
 			this.invoice_line_group_finance_modality = invoiceLineGroupRs.getString(8);
 			this.invoice_line_group_law = invoiceLineGroupRs.getString(9);
-			this.company_code = invoiceLineGroupRs.getString(10);
-			this.product_code = invoiceLineGroupRs.getString(11);
-			this.client_code = invoiceLineGroupRs.getString(12);
+			this.invoice_line_group_price_per_unit = invoiceLineGroupRs.getDouble(10);
+			this.invoice_line_group_price_per_unit_calculation = invoiceLineGroupRs.getString(11);
+			this.invoice_line_group_volume_calculation = invoiceLineGroupRs.getString(12);
+			this.invoice_line_group_amount_calculation = invoiceLineGroupRs.getString(13);
+			this.company_code = invoiceLineGroupRs.getString(14);
+			this.product_code = invoiceLineGroupRs.getString(15);
+			this.client_code = invoiceLineGroupRs.getString(16);
 		}
 		catch(SQLException e)
 		{
@@ -73,11 +81,23 @@ public class InvoiceLineGroup
 		invoiceLines.add(invoiceLine);
 	}
 	
-	public void setCalculatedValues(double invoice_line_group_amount, double invoice_line_group_volume, double invoice_line_group_vat_amount)
+	public void setCalculatedValues(
+			double invoice_line_group_amount, 
+			double invoice_line_group_volume, 
+			double invoice_line_group_vat_amount, 
+			double invoice_line_group_price_per_unit, 
+			String invoice_line_group_price_per_unit_calculation,
+			String invoice_line_group_volume_calculation,
+			String invoice_line_group_amount_calculation
+			)
 	{
 		this.invoice_line_group_amount = invoice_line_group_amount;
 		this.invoice_line_group_volume = invoice_line_group_volume;
 		this.invoice_line_group_vat_amount = invoice_line_group_vat_amount;
+		this.invoice_line_group_price_per_unit = invoice_line_group_price_per_unit;
+		this.invoice_line_group_price_per_unit_calculation = invoice_line_group_price_per_unit_calculation;
+		this.invoice_line_group_volume_calculation = invoice_line_group_volume_calculation;
+		this.invoice_line_group_amount_calculation = invoice_line_group_amount_calculation;
 		this.valuesCalculated = true; 
 	}
 	
@@ -159,6 +179,22 @@ public class InvoiceLineGroup
 
 	public String getInvoice_line_group_law() {
 		return invoice_line_group_law;
+	}
+
+	public double getInvoice_line_group_price_per_unit() {
+		return invoice_line_group_price_per_unit;
+	}
+
+	public String getInvoice_line_group_price_per_unit_calculation() {
+		return invoice_line_group_price_per_unit_calculation;
+	}
+
+	public String getInvoice_line_group_volume_calculation() {
+		return invoice_line_group_volume_calculation;
+	}
+
+	public String getInvoice_line_group_amount_calculation() {
+		return invoice_line_group_amount_calculation;
 	}
 
 	public boolean isValuesCalculated() {

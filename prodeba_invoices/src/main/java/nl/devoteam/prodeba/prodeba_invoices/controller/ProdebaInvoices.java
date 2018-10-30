@@ -9,7 +9,7 @@ import nl.devoteam.prodeba.prodeba_invoices.enumeration.PeriodType;
 
 public class ProdebaInvoices 
 {
-	private static String jdbcUrl = "jdbc:mysql://192.168.0.20:3306/prodeba";
+	private static String jdbcUrl = "jdbc:mysql://192.168.56.101:3306/prodeba";
 	Connection con;
 	
 	public ProdebaInvoices()

@@ -96,6 +96,10 @@ public class InvoiceLineGroupGenerator
 					+ "invoice_line_group_unit,"
 					+ "invoice_line_group_finance_modality,"
 					+ "invoice_line_group_law,"
+					+ "invoice_line_group_price_per_unit,"
+					+ "invoice_line_group_price_per_unit_calculation,"
+					+ "invoice_line_group_volume_calculation,"
+					+ "invoice_line_group_amount_calculation,"
 					+ "company_company_code,"
 					+ "product_product_code,"
 					+ "client_client_code)"
@@ -108,6 +112,10 @@ public class InvoiceLineGroupGenerator
 					+ "'" + invoiceLineGroup.getInvoice_line_group_unit() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "',"
 					+ "'" + invoiceLineGroup.getProduct_law() + "',"
+					+ invoiceLineGroup.getInvoice_line_group_price_per_unit() + ","
+					+ "'" + invoiceLineGroup.getInvoice_line_group_price_per_unit_calculation() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_volume_calculation() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_amount_calculation() + "',"
 					+ "'" + invoiceLineGroup.getCompany_code() + "',"
 					+ "'" + invoiceLineGroup.getProduct_code() + "',"
 					+ "'" + invoiceLineGroup.getClient_code() + "')");
@@ -132,23 +140,30 @@ public class InvoiceLineGroupGenerator
 	
 	private void calculateValues(InvoiceLineGroup invoiceLineGroup) throws Exception
 	{
-		String volumeCalculationTotal = "";
+		String invoice_line_group_volume_calculation = "(";
+		String invoice_line_group_amount_calculation = "";
 		
 		for(InvoiceLine invoiceLine : invoiceLineGroup.getInvoiceLines())
-			volumeCalculationTotal = volumeCalculationTotal.concat(invoiceLine.getInvoice_line_volume_calculation() + "+");
+			invoice_line_group_volume_calculation = invoice_line_group_volume_calculation.concat(invoiceLine.getInvoice_line_volume_calculation() + ")+(");
 		
-		volumeCalculationTotal = volumeCalculationTotal.substring(0, volumeCalculationTotal.length() -1);
+		invoice_line_group_volume_calculation = invoice_line_group_volume_calculation.substring(0, invoice_line_group_volume_calculation.length() -2);
 		
-		Expression expression = new Expression(volumeCalculationTotal);
+		Expression expression = new Expression(invoice_line_group_volume_calculation);
 		
 		double invoice_line_group_volume = expression.eval().doubleValue();
 		invoice_line_group_volume = new BigDecimal(String.valueOf(invoice_line_group_volume)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
-		double invoice_line_group_amount = invoice_line_group_amount(invoiceLineGroup, invoice_line_group_volume);
+		double invoice_line_group_price_per_unit = invoice_line_group_price_per_unit(invoiceLineGroup);
+		
+		double invoice_line_group_amount = invoice_line_group_price_per_unit * invoice_line_group_volume;
 		invoice_line_group_amount = new BigDecimal(String.valueOf(invoice_line_group_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		
+		invoice_line_group_amount_calculation = "(" + invoice_line_group_volume_calculation + ")*" + invoice_line_group_price_per_unit;
 		
 		String invoice_line_group_vat_tariff = invoiceLineGroup.getInvoice_line_group_vat_tariff();
 		double invoice_line_group_vat_amount = 0;
+		
+		String invoice_line_group_price_per_unit_calculation = invoice_line_group_price_per_unit_calculation(invoiceLineGroup);
 		
 		if(invoice_line_group_vat_tariff.equals("0%") || invoice_line_group_vat_tariff.equals("Vrijgesteld"))
 			invoice_line_group_vat_amount = 0;
@@ -161,47 +176,50 @@ public class InvoiceLineGroupGenerator
 		
 		invoice_line_group_vat_amount = new BigDecimal(String.valueOf(invoice_line_group_vat_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
-		invoiceLineGroup.setCalculatedValues(invoice_line_group_amount, invoice_line_group_volume, invoice_line_group_vat_amount);
+		invoiceLineGroup.setCalculatedValues(invoice_line_group_amount, 
+				invoice_line_group_volume, 
+				invoice_line_group_vat_amount, 
+				invoice_line_group_price_per_unit, 
+				invoice_line_group_price_per_unit_calculation,
+				invoice_line_group_volume_calculation,
+				invoice_line_group_amount_calculation);
 	}
-	
-	/*
-	private String invoice_line_group_price_per_unit_calculation(InvoiceLineGroup invoiceLineGroup)
+		
+	private String invoice_line_group_price_per_unit_calculation(InvoiceLineGroup invoiceLineGroup) throws Exception
 	{
 		String assessment_unit = invoiceLineGroup.getInvoice_line_group_unit();
 		String product_unit = product_unit(invoiceLineGroup.getProduct_code());
 		double product_price_per_unit = invoiceLineGroup.getProduct_price_per_unit();
 		
-		double invoice_line_price_per_unit;
-		
 		if(assessment_unit.equals(product_unit))
 			return Double.toString(product_price_per_unit);
 		else if(assessment_unit.equals("minuut") && product_unit.equals("uur"))
-			invoice_line_price_per_unit = product_price_per_unit / 60;
+			return product_price_per_unit + "/60";
 		else if(assessment_unit.equals("minuut") && product_unit.equals("dagdeel"))
-			invoice_line_price_per_unit = product_price_per_unit / 60 / 4;
+			return product_price_per_unit + "/60/4";
 		else if(assessment_unit.equals("minuut") && product_unit.equals("etmaal"))
-			invoice_line_price_per_unit = product_price_per_unit / 60 / 24;
+			return product_price_per_unit + "/60/24";
 		else if(assessment_unit.equals("uur") && product_unit.equals("minuut"))
-			invoice_line_price_per_unit = product_price_per_unit * 60;
+			return product_price_per_unit + "*60";
 		else if(assessment_unit.equals("uur") && product_unit.equals("dagdeel"))
-			invoice_line_price_per_unit = product_price_per_unit / 4;
+			return product_price_per_unit + "/4";
 		else if(assessment_unit.equals("uur") && product_unit.equals("etmaal"))
-			invoice_line_price_per_unit = product_price_per_unit / 24;
+			return product_price_per_unit + "/24";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("minuut"))
-			invoice_line_price_per_unit = product_price_per_unit * 4 * 60;
+			return product_price_per_unit + "*4*60";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("uur"))
-			invoice_line_price_per_unit = product_price_per_unit * 4;
+			return product_price_per_unit + "*4";
 		else if(assessment_unit.equals("dagdeel") && product_unit.equals("etmaal"))
-			invoice_line_price_per_unit = product_price_per_unit / 6;
+			return product_price_per_unit + "/6";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("minuut"))
-			invoice_line_price_per_unit = product_price_per_unit * 24 * 60;
+			return product_price_per_unit + "*24*60";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("uur"))
-			invoice_line_price_per_unit = product_price_per_unit * 24;
+			return product_price_per_unit + "*24";
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
-			invoice_line_price_per_unit = product_price_per_unit * 6;
+			return product_price_per_unit + "*6";
 		else
-			throw new Exception("No valid unit conversion for amount was possible.");
-	} */
+			throw new Exception("No valid calculation for the invoice line group price per unit could be determined.");
+	}
 	
 	private double invoice_line_group_price_per_unit(InvoiceLineGroup invoiceLineGroup) throws SQLException, Exception
 	{
@@ -238,7 +256,7 @@ public class InvoiceLineGroupGenerator
 		else if(assessment_unit.equals("etmaal") && product_unit.equals("dagdeel"))
 			invoice_line_price_per_unit = product_price_per_unit * 6;
 		else
-			throw new Exception("No valid unit conversion for amount was possible.");
+			throw new Exception("No valid unit conversion for price per unit was possible.");
 		
 		return new BigDecimal(String.valueOf(invoice_line_price_per_unit)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
@@ -251,12 +269,6 @@ public class InvoiceLineGroupGenerator
 		return rs.getString(1);
 	}
 	
-	private double invoice_line_group_amount(InvoiceLineGroup invoiceLineGroup, double invoice_line_group_volume) throws SQLException, Exception 
-	{
-		double invoice_line_group_amount = invoice_line_group_price_per_unit(invoiceLineGroup) * invoice_line_group_volume;
-		return new BigDecimal(String.valueOf(invoice_line_group_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-	}
-
 	private void generateMonthlyInvoiceLineGroups(String invoiceRange) throws Exception 
 	{
 		LocalDate minDate;
