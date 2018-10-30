@@ -111,7 +111,7 @@ public class InvoiceLineGroupGenerator
 					+ "'" + invoiceLineGroup.getInvoice_line_group_range().toLowerCase() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_unit() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_finance_modality() + "',"
-					+ "'" + invoiceLineGroup.getProduct_law() + "',"
+					+ "'" + invoiceLineGroup.getInvoice_line_group_law() + "',"
 					+ invoiceLineGroup.getInvoice_line_group_price_per_unit() + ","
 					+ "'" + invoiceLineGroup.getInvoice_line_group_price_per_unit_calculation() + "',"
 					+ "'" + invoiceLineGroup.getInvoice_line_group_volume_calculation() + "',"
@@ -140,6 +140,9 @@ public class InvoiceLineGroupGenerator
 	
 	private void calculateValues(InvoiceLineGroup invoiceLineGroup) throws Exception
 	{
+		int invoice_information_volume_decimals = invoice_information_volume_decimals(invoiceLineGroup);
+		String invoice_information_rounding_rule = invoice_information_rounding_rule(invoiceLineGroup); 
+		
 		String invoice_line_group_volume_calculation = "(";
 		String invoice_line_group_amount_calculation = "";
 		
@@ -151,7 +154,7 @@ public class InvoiceLineGroupGenerator
 		Expression expression = new Expression(invoice_line_group_volume_calculation);
 		
 		double invoice_line_group_volume = expression.eval().doubleValue();
-		invoice_line_group_volume = new BigDecimal(String.valueOf(invoice_line_group_volume)).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
+		invoice_line_group_volume = new BigDecimal(String.valueOf(invoice_line_group_volume)).setScale(invoice_information_volume_decimals, roundingMethod(invoice_information_rounding_rule)).doubleValue();
 		
 		double invoice_line_group_price_per_unit = invoice_line_group_price_per_unit(invoiceLineGroup);
 		
@@ -183,6 +186,45 @@ public class InvoiceLineGroupGenerator
 				invoice_line_group_price_per_unit_calculation,
 				invoice_line_group_volume_calculation,
 				invoice_line_group_amount_calculation);
+	}
+	
+	private int roundingMethod(String invoice_information_rounding_method) throws Exception
+	{
+		switch(invoice_information_rounding_method)
+		{
+		case "Rekenkundig":
+			return BigDecimal.ROUND_HALF_UP;
+		case "Boven":
+			return BigDecimal.ROUND_UP;
+		case "Beneden":
+			return BigDecimal.ROUND_DOWN;
+		default:
+			throw new Exception("Cannot determine rounding method.");
+		}
+	}
+	
+	private String invoice_information_rounding_rule(InvoiceLineGroup invoiceLineGroup) throws SQLException
+	{
+		Statement stmnt = con.createStatement();
+		ResultSet rs = stmnt.executeQuery(""
+				+ "SELECT invoice_information_rounding_rule " 
+				+ "FROM invoice_information "
+				+ "WHERE company_code = '" + invoiceLineGroup.getCompany_code() + "' AND "
+				+ "invoice_information_law = '" + invoiceLineGroup.getInvoice_line_group_law() + "'");
+		rs.next();
+		return rs.getString(1);
+	}
+	
+	private int invoice_information_volume_decimals(InvoiceLineGroup invoiceLineGroup) throws SQLException
+	{
+		Statement stmnt = con.createStatement();
+		ResultSet rs = stmnt.executeQuery(""
+				+ "SELECT invoice_information_volume_decimals " 
+				+ "FROM invoice_information "
+				+ "WHERE company_code = '" + invoiceLineGroup.getCompany_code() + "' AND "
+				+ "invoice_information_law = '" + invoiceLineGroup.getInvoice_line_group_law() + "'");
+		rs.next();
+		return rs.getInt(1);
 	}
 		
 	private String invoice_line_group_price_per_unit_calculation(InvoiceLineGroup invoiceLineGroup) throws Exception

@@ -13,7 +13,6 @@ public class InvoiceLineGroup
 	private List<InvoiceLine> invoiceLines;
 	private String company_code;
 	private String client_code;
-	private String product_law;
 	private String product_code;
 	private String invoice_line_group_unit; 
 	private String invoice_line_group_invoice_range;
@@ -37,7 +36,7 @@ public class InvoiceLineGroup
 		invoiceLines = new ArrayList<InvoiceLine>();
 		this.company_code = company_code;
 		this.client_code = client_code;
-		this.product_law = product_law;
+		this.invoice_line_group_law = product_law;
 		this.product_code = product_code;
 		this.invoice_line_group_unit = assessment_unit;
 		invoiceLines.add(invoiceLine);
@@ -111,10 +110,6 @@ public class InvoiceLineGroup
 
 	public String getClient_code() {
 		return client_code;
-	}
-
-	public String getProduct_law() {
-		return product_law;
 	}
 	
 	public String getProduct_code() {
