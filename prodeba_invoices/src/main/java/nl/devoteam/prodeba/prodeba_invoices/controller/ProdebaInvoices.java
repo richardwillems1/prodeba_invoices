@@ -9,7 +9,7 @@ import nl.devoteam.prodeba.prodeba_invoices.enumeration.PeriodType;
 
 public class ProdebaInvoices 
 {
-	private static String jdbcUrl = "jdbc:mysql://192.168.56.101:3306/prodeba";
+	private static String jdbcUrl = "jdbc:mysql://192.168.100.110:3306/prodeba";
 	Connection con;
 	
 	public ProdebaInvoices()
@@ -34,13 +34,13 @@ public class ProdebaInvoices
 			Statement stmnt = con.createStatement();
 			
 			stmnt.addBatch("SET FOREIGN_KEY_CHECKS = 0;");
-			stmnt.addBatch("TRUNCATE table hours;");
+			//stmnt.addBatch("TRUNCATE table hours;");
 			stmnt.addBatch("TRUNCATE table il_to_ilg;");
 			stmnt.addBatch("TRUNCATE table ilg_to_i;");
 			stmnt.addBatch("TRUNCATE table invoice_line_groups;");
 			stmnt.addBatch("TRUNCATE table invoice_lines;");
 			stmnt.addBatch("TRUNCATE table invoices;");
-			stmnt.addBatch("CALL create_random_hour_registrations(" + numberOfHourRegistrations + ")");
+			//stmnt.addBatch("CALL create_random_hour_registrations(" + numberOfHourRegistrations + ")");
 			
 			stmnt.executeBatch();
 			
@@ -136,5 +136,4 @@ public class ProdebaInvoices
 		pi.generateInvoices(PeriodType.PERIOD, "Periode 10");
 		pi.closeConnection();
 	}
-
 }

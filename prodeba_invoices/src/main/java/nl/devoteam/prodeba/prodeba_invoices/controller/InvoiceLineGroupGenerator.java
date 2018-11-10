@@ -1,6 +1,7 @@
 package nl.devoteam.prodeba.prodeba_invoices.controller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -153,15 +154,17 @@ public class InvoiceLineGroupGenerator
 		
 		Expression expression = new Expression(invoice_line_group_volume_calculation);
 		
-		double invoice_line_group_volume = expression.eval().doubleValue();
-		invoice_line_group_volume = new BigDecimal(String.valueOf(invoice_line_group_volume)).setScale(invoice_information_volume_decimals, roundingMethod(invoice_information_rounding_rule)).doubleValue();
+		BigDecimal invoice_line_group_volume = expression.eval();
+		
+		invoice_line_group_volume = invoice_line_group_volume.setScale(5, RoundingMode.HALF_UP);
+		invoice_line_group_volume = invoice_line_group_volume.setScale(invoice_information_volume_decimals, roundingMethod(invoice_information_rounding_rule));
 		
 		double invoice_line_group_price_per_unit = invoice_line_group_price_per_unit(invoiceLineGroup);
 		
-		double invoice_line_group_amount = invoice_line_group_price_per_unit * invoice_line_group_volume;
+		double invoice_line_group_amount = invoice_line_group_price_per_unit * invoice_line_group_volume.doubleValue();
 		invoice_line_group_amount = new BigDecimal(String.valueOf(invoice_line_group_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
-		invoice_line_group_amount_calculation = "(" + invoice_line_group_volume_calculation + ")*" + invoice_line_group_price_per_unit;
+		invoice_line_group_amount_calculation = invoice_line_group_volume + "*" + invoice_line_group_price_per_unit;
 		
 		String invoice_line_group_vat_tariff = invoiceLineGroup.getInvoice_line_group_vat_tariff();
 		double invoice_line_group_vat_amount = 0;
@@ -180,7 +183,7 @@ public class InvoiceLineGroupGenerator
 		invoice_line_group_vat_amount = new BigDecimal(String.valueOf(invoice_line_group_vat_amount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 		
 		invoiceLineGroup.setCalculatedValues(invoice_line_group_amount, 
-				invoice_line_group_volume, 
+				invoice_line_group_volume.doubleValue(), 
 				invoice_line_group_vat_amount, 
 				invoice_line_group_price_per_unit, 
 				invoice_line_group_price_per_unit_calculation,
@@ -219,12 +222,18 @@ public class InvoiceLineGroupGenerator
 	{
 		Statement stmnt = con.createStatement();
 		ResultSet rs = stmnt.executeQuery(""
-				+ "SELECT invoice_information_volume_decimals " 
-				+ "FROM invoice_information "
-				+ "WHERE company_code = '" + invoiceLineGroup.getCompany_code() + "' AND "
-				+ "invoice_information_law = '" + invoiceLineGroup.getInvoice_line_group_law() + "'");
-		rs.next();
-		return rs.getInt(1);
+				+ "SELECT company_type "
+				+ "FROM commissioning_companies "
+				+ "WHERE company_code = '" + invoiceLineGroup.getCompany_code() + "'");
+		rs.next();		
+		
+		String company_type = rs.getString(1);
+		String finance_modality = invoiceLineGroup.getInvoice_line_group_finance_modality();
+		
+		if(company_type.equals("Gemeente") && finance_modality.equals("ZIN"))
+			return 0;
+		else
+			return 2;
 	}
 		
 	private String invoice_line_group_price_per_unit_calculation(InvoiceLineGroup invoiceLineGroup) throws Exception
@@ -372,17 +381,17 @@ public class InvoiceLineGroupGenerator
 		if(invoiceRange.equals("Periode 8"))
 		{
 			minDate = LocalDate.parse("2018-08-01");
-			maxDate = LocalDate.parse("2018-08-29");
+			maxDate = LocalDate.parse("2018-08-28");
 		}
 		else if(invoiceRange.equals("Periode 9"))
 		{
-			minDate = LocalDate.parse("2018-08-30");
-			maxDate = LocalDate.parse("2018-09-27");
+			minDate = LocalDate.parse("2018-08-29");
+			maxDate = LocalDate.parse("2018-09-25");
 		}
 		else if(invoiceRange.equals("Periode 10"))
 		{
-			minDate = LocalDate.parse("2018-09-28");
-			maxDate = LocalDate.parse("2018-10-26");
+			minDate = LocalDate.parse("2018-09-26");
+			maxDate = LocalDate.parse("2018-10-23");
 		}
 		else
 			throw new Exception("Invalid period provided.");
